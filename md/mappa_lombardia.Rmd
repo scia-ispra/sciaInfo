@@ -1,0 +1,96 @@
+---
+description: |
+  Mappe delle reti presenti sul server SCIA.
+author:
+  - name: VAL-CLO 
+    affiliation: ISPRA
+date: "`r Sys.Date()`"
+params:
+  regione: lombardia
+  fileAnagrafica: ./_anagrafica/reg.lombardia.scia.info.csv
+output: distill::distill_article
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library("tidyverse")
+library("leaflet")
+library("regioniItalia")
+library("sf")
+
+knitr::opts_chunk$set(echo=FALSE,eval = TRUE,include = FALSE,warning = FALSE,error=FALSE)
+
+REGIONE<-params$regione
+```
+
+---
+title: "`r glue::glue('Reti regione {Hmisc::capitalize(tolower(REGIONE))}')`"  
+---
+
+<br><br>
+
+```{r}
+read_delim(params$fileAnagrafica,delim=";",col_names = TRUE)->ana
+unique(ana$NOME_RETE)->nomiReti
+```
+
+```{r regione}
+st_transform(get(params$regione),crs = 4326)->shapeRegione
+```
+
+
+```{r mappa,include=FALSE}
+leaflet() %>%
+  addTiles() %>%
+  leaflet::addPolygons(data=shapeRegione,group = "REGIONE",weight = 1,color = "black",opacity = 1,fillOpacity =0.5,fillColor = "red") %>%
+  addLayersControl(overlayGroups = c("REGIONE"),options = layersControlOptions(collapsed = FALSE))->mappaBase
+```
+
+
+```{r,include=FALSE}
+aggiungiMarkers<-function(.map,.ana,.markerColor,...){ 
+  
+  makeAwesomeIcon(icon="ios-close",library = "ion",markerColor =.markerColor,iconColor = "black")->icona
+
+  
+  .map %>%
+    addAwesomeMarkers(lng=~LON,lat=~LAT,label=~NOME,data=.ana,icon=icona,...)->out
+  
+  out
+  
+}
+
+colori<-c("red","yellow","orange","blue","green","pink")
+
+for(ii in 1:length(nomiReti)){ 
+
+
+  RETE<-nomiReti[ii]
+  COLORE<-colori[ii] 
+  aggiungiMarkers(.map=mappaBase,.ana=ana %>% filter(NOME_RETE==RETE),group=RETE,.markerColor=COLORE,)->mappaBase  
+  
+  }
+
+```
+
+
+
+```{r,include=TRUE,layout="l-page"}
+mappaBase %>%
+  addLayersControl(overlayGroups = nomiReti,options = layersControlOptions(collapsed = FALSE),)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

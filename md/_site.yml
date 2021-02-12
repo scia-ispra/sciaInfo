@@ -1,0 +1,14 @@
+name: "sciaInfo"
+title: "sciaInfo"
+description: |
+  sciaInfo
+output_dir: "_site"
+navbar:
+  right:
+    - text: "Home"
+      href: index.html
+    - text: "About"
+      href: about.html
+    - text: "Mappe"
+      href: indice_mappe.html
+output: distill::distill_article

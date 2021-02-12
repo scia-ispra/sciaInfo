@@ -1,0 +1,23 @@
+---
+title: "Untitled"
+description: |
+  Mappe delle reti presenti sul server SCIA.
+author:
+  - name: VAL-CLO 
+    affiliation: ISPRA
+date: "`r Sys.Date()`"
+output: distill::distill_article
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+### [Lombardia](./mappa_lombardia.html) 
+
+
+
+
+
+
+
