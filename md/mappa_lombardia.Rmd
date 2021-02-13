@@ -17,6 +17,8 @@ library("tidyverse")
 library("leaflet")
 library("regioniItalia")
 library("sf")
+library("gt")
+library("kableExtra")
 
 knitr::opts_chunk$set(echo=FALSE,eval = TRUE,include = FALSE,warning = FALSE,error=FALSE)
 
@@ -27,7 +29,7 @@ REGIONE<-params$regione
 title: "`r glue::glue('Reti regione {Hmisc::capitalize(tolower(REGIONE))}')`"  
 ---
 
-<br><br>
+<br>
 
 ```{r}
 read_delim(params$fileAnagrafica,delim=";",col_names = TRUE)->ana
@@ -42,7 +44,7 @@ st_transform(get(params$regione),crs = 4326)->shapeRegione
 ```{r mappa,include=FALSE}
 leaflet() %>%
   addTiles() %>%
-  leaflet::addPolygons(data=shapeRegione,group = "REGIONE",weight = 1,color = "black",opacity = 1,fillOpacity =0.5,fillColor = "red") %>%
+  leaflet::addPolygons(data=shapeRegione,group = "REGIONE",weight = 0.8,color = "black",opacity = 1,fillOpacity =0.1,fillColor = "red") %>%
   addLayersControl(overlayGroups = c("REGIONE"),options = layersControlOptions(collapsed = FALSE))->mappaBase
 ```
 
@@ -73,11 +75,29 @@ for(ii in 1:length(nomiReti)){
 
 ```
 
+### Mappa di `r nrow(ana)` stazioni
 
+```{r,include=TRUE}
+ana %>% 
+  group_by(NOME_RETE) %>% 
+  summarize(numeroStazioni=n(),data=list(QUOTA),.groups="drop")->conteggio
 
-```{r,include=TRUE,layout="l-page"}
+range(ana$QUOTA)->quotaRange
+
+conteggio %>%
+  mutate(plot=map(data,.f=~spec_plot(x=.x,ylim=quotaRange,file_type = "svg")),
+         plot_svg=map(plot,"svg_text"),
+         plot_html=map(plot_svg,~gt::html(.x))) %>%
+  select(-data,-plot,-plot_svg) %>%
+  gt()
+
+```
+
+<br>
+
+```{r,include=TRUE,layout="l-page",fig.height=6}
 mappaBase %>%
-  addLayersControl(overlayGroups = nomiReti,options = layersControlOptions(collapsed = FALSE),)
+  addLayersControl(overlayGroups = nomiReti,options = layersControlOptions(collapsed = FALSE))
 ```
 
 
